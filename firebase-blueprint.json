@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "SynthesisStats": {
+      "title": "SynthesisStats",
+      "description": "Metriky úkolů a projektové statistiky Synthesis Vibe Coding.",
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "description": "ID úkolu (např. #005-SYN)"
+        },
+        "architect_name": {
+          "type": "string",
+          "description": "Jméno architekta (Jiří Šár)"
+        },
+        "token_metrics": {
+          "type": "object",
+          "properties": {
+            "input": { "type": "number" },
+            "output": { "type": "number" },
+            "total": { "type": "number" },
+            "estimated_cost_usd": { "type": "number" }
+          },
+          "required": ["input", "output", "total", "estimated_cost_usd"]
+        },
+        "duration_ms": {
+          "type": "number",
+          "description": "Čas od zahájení do dokončení v milisekundách"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["COMPLETED", "FAILED"],
+          "description": "Stav úkolu"
+        },
+        "deployment": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "url": { "type": "string" },
+            "status": { "type": "string" },
+            "error_logs": { "type": "string" }
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Čas zápisu (Server Timestamp)"
+        }
+      },
+      "required": ["task_id", "architect_name", "token_metrics", "duration_ms", "status", "timestamp"]
+    }
+  },
+  "firestore": {
+    "synthesis_stats/{statsId}": {
+      "schema": "SynthesisStats",
+      "description": "Kolekce pro ukládání statistik úkolů."
+    }
+  }
+}

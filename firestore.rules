@@ -1,0 +1,79 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: synthesis_stats
+// Document ID: {statsId}
+// Fields:
+//   - task_id: string (required) - ID úkolu
+//   - architect_name: string (required) - Jméno architekta
+//   - token_metrics: map (required) - Metriky tokenů
+//     - input: number
+//     - output: number
+//     - total: number
+//     - estimated_cost_usd: number
+//   - duration_ms: number (required) - Doba trvání v ms
+//   - status: string (required, enum: COMPLETED, FAILED) - Stav úkolu
+//   - timestamp: timestamp (required) - Čas zápisu
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email in ['sarji@seznam.cz', 'mallfuriionn@gmail.com'] && 
+         request.auth.token.email_verified == true);
+    }
+
+    function isValidStats(data) {
+      return data.keys().hasAll(['task_id', 'architect_name', 'token_metrics', 'duration_ms', 'status', 'timestamp']) &&
+             data.task_id is string && data.task_id.size() > 0 && data.task_id.size() < 100 &&
+             data.architect_name is string && data.architect_name == 'Jiří Šár' &&
+             data.token_metrics is map &&
+             data.token_metrics.input is number &&
+             data.token_metrics.output is number &&
+             data.token_metrics.total is number &&
+             data.token_metrics.estimated_cost_usd is number &&
+             data.duration_ms is number &&
+             data.status in ['COMPLETED', 'FAILED'] &&
+             (!('deployment' in data) || (
+               data.deployment is map &&
+               (!('id' in data.deployment) || data.deployment.id is string) &&
+               (!('url' in data.deployment) || data.deployment.url is string) &&
+               (!('status' in data.deployment) || data.deployment.status is string)
+             )) &&
+             data.timestamp is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /synthesis_stats/{statsId} {
+      // Allow read for admins only
+      allow read: if isAdmin();
+      
+      // Allow create if authenticated and data is valid
+      allow create: if isAuthenticated() && isValidStats(request.resource.data);
+      
+      // No updates or deletes allowed for stats (immutable history)
+      allow update, delete: if false;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
