@@ -17,3 +17,5 @@ Tvým úkolem je:
 - #006-SYN: GitHub Autonomy Engine (Completed)
 - #007-SYN: Vercel Deployer Integration (Completed)
 - #007-SYN-PUSH: Initial Project Deployment (Completed)
+- #007-SYN-EXECUTE_PUSH: Initial Project Push (Completed)
+- #008-SYN: Google Sheets Stats Integration (Completed)
